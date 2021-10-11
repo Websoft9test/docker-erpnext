@@ -1,112 +1,154 @@
-# this file from docker-compose.workspace, delete mail-server
-# default MySQL root password is 123456
+# Initial login username: Administrator and login password: admin
+version: "3.8"
 
-
-version: '3.8'
 services:
-  onlyoffice-mysql-server:
-    container_name: ${APP_CONTAINER_NAME}-mysql
-    image: mysql:${DB_MYSQL_VERSION}
-    environment:
-     - MYSQL_ROOT_PASSWORD=${DB_MYSQL_PASSWORD}
-    stdin_open: true
-    user: root
-    tty: true
+  erpnext-nginx:
+    image: frappe/erpnext-nginx:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-nginx
     restart: always
-    volumes:
-     - ${VOLUMES_PATH_PREFIX}/config/mysql/conf.d:/etc/mysql/conf.d
-     - ${VOLUMES_PATH_PREFIX}/config/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-     - ${VOLUMES_PATH_PREFIX}/mysql_data:/var/lib/mysql
-     
-  onlyoffice-community-server:
-    container_name: ${APP_CONTAINER_NAME}
-    image: onlyoffice/communityserver:11.0.0.1458
-    depends_on:
-     - onlyoffice-mysql-server
-     - onlyoffice-document-server
-    environment:
-     - ONLYOFFICE_CORE_MACHINEKEY=core_secret
-     - CONTROL_PANEL_PORT_80_TCP=80
-     - CONTROL_PANEL_PORT_80_TCP_ADDR=onlyoffice-control-panel
-     - DOCUMENT_SERVER_PORT_80_TCP_ADDR=onlyoffice-document-server
-     - DOCUMENT_SERVER_JWT_ENABLED=true
-     - DOCUMENT_SERVER_JWT_SECRET=jwt_secret
-     - DOCUMENT_SERVER_JWT_HEADER=AuthorizationJwt
-     - MYSQL_SERVER_ROOT_PASSWORD=123456
-     - MYSQL_SERVER_DB_NAME=onlyoffice
-     - MYSQL_SERVER_HOST=onlyoffice-mysql-server
-     - MYSQL_SERVER_USER=onlyoffice
-     - MYSQL_SERVER_PASS=123456
     ports:
-     - '${APP_PORT}:80'
-     - '443'
-     - '5222:5222'
-    stdin_open: true
-    tty: true
-    restart: always
-    privileged: true
-    volumes:
-     - ${VOLUMES_PATH_PREFIX}/community_data:/var/www/onlyoffice/Data
-     - ${VOLUMES_PATH_PREFIX}/community_log:/var/log/onlyoffice
-     - ${VOLUMES_PATH_PREFIX}/community_letsencrypt:/etc/letsencrypt
-     - ${VOLUMES_PATH_PREFIX}/document_data:/var/www/onlyoffice/DocumentServerData
-     - /sys/fs/cgroup:/sys/fs/cgroup:ro
-     - ${VOLUMES_PATH_PREFIX}/certs:/var/www/onlyoffice/Data/certs
-     
-  onlyoffice-document-server:
-    container_name:  ${APP_CONTAINER_NAME}-document-server
-    image: onlyoffice/documentserver:6.0.2
-    stdin_open: true
-    tty: true
-    restart: always
+      - ${APP_PORT}:80
     environment:
-     - JWT_ENABLED=true
-     - JWT_SECRET=jwt_secret
-     - JWT_HEADER=AuthorizationJwt
-    ports:
-     - '9002:80'
-    expose:
-      - '80'
-      - '443'
+      - FRAPPE_PY=erpnext-python
+      - FRAPPE_PY_PORT=${APP_PORT}
+      - FRAPPE_SOCKETIO=frappe-socketio
+      - SOCKETIO_PORT=9000
     volumes:
-       - ${VOLUMES_PATH_PREFIX}/document_data:/var/www/onlyoffice/Data
-       - ${VOLUMES_PATH_PREFIX}/document_log:/var/log/onlyoffice
-       - ${VOLUMES_PATH_PREFIX}/document_fonts:/usr/share/fonts/truetype/custom
-       - .document_forgotten:/var/lib/onlyoffice/documentserver/App_Data/cache/files/forgotten
+      - sites-vol:/var/www/html/sites:rw
+      - assets-vol:/assets:rw
 
-  onlyoffice-control-panel:
-    container_name:  ${APP_CONTAINER_NAME}-control-panel
-    depends_on:
-     - onlyoffice-document-server
-     - onlyoffice-community-server
-    image: onlyoffice/controlpanel:2.9.0.351
+  erpnext-python:
+    image: frappe/erpnext-worker:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-worker
+    restart: always
     environment:
-     - ONLYOFFICE_CORE_MACHINEKEY=core_secret
-    expose:
-      - '80'
-      - '443'
+      - MARIADB_HOST=${DB_MARIADB_HOST}
+      - REDIS_CACHE=redis-cache:6379
+      - REDIS_QUEUE=redis-queue:6379
+      - REDIS_SOCKETIO=redis-socketio:6379
+      - SOCKETIO_PORT=9000
+      - AUTO_MIGRATE=1
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - assets-vol:/home/frappe/frappe-bench/sites/assets:rw
+
+  frappe-socketio:
+    image: frappe/frappe-socketio:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-socketio
+    restart: always
+    depends_on:
+      - redis-socketio
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - logs-vol:/home/frappe/frappe-bench/logs:rw
+
+  erpnext-worker-default:
+    image: frappe/erpnext-worker:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-worker-default
+    restart: always
+    command: worker
+    depends_on:
+      - redis-queue
+      - redis-cache
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - logs-vol:/home/frappe/frappe-bench/logs:rw
+
+  erpnext-worker-short:
+    image: frappe/erpnext-worker:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-worker-short
+    restart: always
+    command: worker
+    environment:
+      - WORKER_TYPE=short
+    depends_on:
+      - redis-queue
+      - redis-cache
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - logs-vol:/home/frappe/frappe-bench/logs:rw
+
+  erpnext-worker-long:
+    image: frappe/erpnext-worker:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-worker-long
+    restart: always
+    command: worker
+    environment:
+      - WORKER_TYPE=long
+    depends_on:
+      - redis-queue
+      - redis-cache
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites:rw
+
+  erpnext-schedule:
+    image: frappe/erpnext-worker:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-schedule
+    restart: always
+    command: schedule
+    depends_on:
+      - redis-queue
+      - redis-cache
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - logs-vol:/home/frappe/frappe-bench/logs:rw
+
+  redis-cache:
+    image: redis:${DB_REDIS_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-redis-cache
     restart: always
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${VOLUMES_PATH_PREFIX}/controlpanel_data:/var/www/onlyoffice/Data
-      - ${VOLUMES_PATH_PREFIX}/controlpanel_log:/var/log/onlyoffice
-    stdin_open: true
-    tty: true
-    
+      - ${VOLUMES_PATH_PREFIX}/redis-cache-vol:/data
+
+  redis-queue:
+    image: redis:${DB_REDIS_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-redis-queue
+    restart: always
+    volumes:
+      - ${VOLUMES_PATH_PREFIX}/redis-queue-vol:/data
+
+  redis-socketio:
+    image: redis:${DB_REDIS_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-redis-socketio
+    restart: always
+    volumes:
+      - ${VOLUMES_PATH_PREFIX}/redis-socketio-vol:/data
+
+  mariadb:
+    image: mariadb:${DB_MARIADB_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-mariadb
+    restart: always
+    ports:
+      - ${DB_MARIADB_PORT}:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
+    volumes:
+      - ./installation/frappe-mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
+      - ${VOLUMES_PATH_PREFIX}/mariadb-vol:/var/lib/mysql
+
+  site-creator:
+    image: frappe/erpnext-worker:${APP_VERSION}
+    container_name: ${APP_CONTAINER_NAME}-site-creator
+    restart: "no"
+    command: new
+    depends_on:
+      - erpnext-python
+    environment:
+      - SITE_NAME=${APP_SITE_URL}
+      - SITES=${APP_SITE_NAME}
+      - DB_ROOT_USER=${DB_MRAIADB_USER}
+      - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
+      - ADMIN_PASSWORD=${APP_PASSWORD}
+      - INSTALL_APPS=${APP_INSTALL_APPS}
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - logs-vol:/home/frappe/frappe-bench/logs:rw
+
+volumes:
+  sites-vol:
+  assets-vol:
+  logs-vol:
+
 networks:
   default:
-      name: ${APP_NETWORK}
-    
-volumes:
-  document_data:
-    driver: local
-  document_log:
-    driver: local
-  document_forgotten:
-  community_mysql:
-  community_data:
-  community_log:
-  community_letsencrypt:
-  controlpanel_data:
-  controlpanel_log:
-  mysql_data:
+      name: "${APP_NETWORK}"
