@@ -123,7 +123,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
     volumes:
-      - ./installation/frappe-mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
+      - ./src/installation/frappe-mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
       - ${VOLUMES_PATH_PREFIX}/mariadb-vol:/var/lib/mysql
 
   site-creator:
