@@ -13,6 +13,7 @@ services:
       - FRAPPE_PY_PORT=${APP_PORT}
       - FRAPPE_SOCKETIO=frappe-socketio
       - SOCKETIO_PORT=9000
+      - SKIP_NGINX_TEMPLATE_GENERATION=${SKIP_NGINX_TEMPLATE_GENERATION}
     volumes:
       - sites-vol:/var/www/html/sites:rw
       - assets-vol:/assets:rw
@@ -28,6 +29,7 @@ services:
       - REDIS_SOCKETIO=redis-socketio:6379
       - SOCKETIO_PORT=9000
       - AUTO_MIGRATE=1
+      - WORKER_CLASS=${WORKER_CLASS}
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites:rw
       - assets-vol:/home/frappe/frappe-bench/sites/assets:rw
@@ -120,8 +122,14 @@ services:
     restart: always
     ports:
       - ${DB_MARIADB_PORT}:3306
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
+      - MYSQL_INITDB_SKIP_TZINFO=1
     volumes:
       - ./src/installation/frappe-mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
       - ${VOLUMES_PATH_PREFIX}/mariadb-vol:/var/lib/mysql
