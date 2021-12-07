@@ -65,14 +65,14 @@ sudo systemctl start docker
 
 #### 安装 ERPNext
 
-直接运行下面的命令快速安装应用。如果你熟悉 Docker，建议先修改 [docker-compose](docker-compose-production.yml) 文件以满足自己的需求
+直接运行下面的命令快速安装应用。如果你熟悉 Docker，建议先修改 [docker-compose](docker-compose.yml) 文件以满足自己的需求
 
 ```
 git clone --depth=1 https://github.com/Websoft9/docker-erpnext
 cd docker-erpnext
 public_ip=`wget -O - https://download.websoft9.com/ansible/get_ip.sh | bash`  
 sudo sed -i s/APP_SITE_URL.*/APP_SITE_URL=$public_ip/g ./.env  
-sudo docker-compose -f docker-compose.yml --env-file .env up -d
+sudo docker-compose up -d
 ```
 
 ### 常见问题
