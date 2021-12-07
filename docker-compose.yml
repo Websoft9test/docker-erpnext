@@ -131,7 +131,6 @@ services:
       - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
       - MYSQL_INITDB_SKIP_TZINFO=1
     volumes:
-      - ./src/installation/frappe-mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
       - ${VOLUMES_PATH_PREFIX}/mariadb-vol:/var/lib/mysql
 
   site-creator:
