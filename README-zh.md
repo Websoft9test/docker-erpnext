@@ -71,7 +71,7 @@ sudo systemctl start docker
 git clone --depth=1 https://github.com/Websoft9/docker-erpnext
 cd docker-erpnext
 public_ip=`wget -O - https://download.websoft9.com/ansible/get_ip.sh | bash`  
-sudo sed -i s/APP_SITE_URL.*/APP_SITE_URL=$public_ip/g ./.env  
+sudo sed -i s/erp.example.com/$public_ip/g ./.env  
 sudo docker-compose up -d
 ```
 
