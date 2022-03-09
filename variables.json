@@ -37,7 +37,7 @@
     {
       "name": "mariadb",
       "port": "3306",
-      "description_cn": "TCP 访问MariaDB数据库",
+      "description_cn": "TCP 访问MariaDB数据库 ",
       "description_en": "Accessing MySQL database with TCP",
       "required": "Y"
     }
