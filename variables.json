@@ -22,7 +22,7 @@
       "cmd": "public_ip=`wget -O - https://download.websoft9.com/ansible/get_ip.sh | bash`"
     },
     {
-      "cmd": "sudo sed -i s/APP_SITE_URL.*/APP_SITE_URL=$public_ip/g ./.env"
+      "cmd": "sudo sed -i s/erp.example.com/$public_ip/g ./.env"
     }
   ],
   "services":[
