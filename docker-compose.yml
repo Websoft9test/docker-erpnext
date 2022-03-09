@@ -101,21 +101,21 @@ services:
     container_name: ${APP_CONTAINER_NAME}-redis-cache
     restart: always
     volumes:
-      - ${VOLUMES_PATH_PREFIX}/redis-cache-vol:/data
+      - redis-cache-vol:/data
 
   redis-queue:
     image: redis:${DB_REDIS_VERSION}
     container_name: ${APP_CONTAINER_NAME}-redis-queue
     restart: always
     volumes:
-      - ${VOLUMES_PATH_PREFIX}/redis-queue-vol:/data
+      - redis-queue-vol:/data
 
   redis-socketio:
     image: redis:${DB_REDIS_VERSION}
     container_name: ${APP_CONTAINER_NAME}-redis-socketio
     restart: always
     volumes:
-      - ${VOLUMES_PATH_PREFIX}/redis-socketio-vol:/data
+      - redis-socketio-vol:/data
 
   mariadb:
     image: mariadb:${DB_MARIADB_VERSION}
@@ -132,7 +132,7 @@ services:
       - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
       - MYSQL_INITDB_SKIP_TZINFO=1
     volumes:
-      - ${VOLUMES_PATH_PREFIX}/mariadb-vol:/var/lib/mysql
+      - mariadb-vol:/var/lib/mysql
 
   site-creator:
     image: frappe/erpnext-worker:${APP_VERSION}
@@ -156,7 +156,11 @@ volumes:
   sites-vol:
   assets-vol:
   logs-vol:
-
+  mariadb-vol:
+  redis-cache-vol:
+  redis-queue-vol:
+  redis-socketio-vol:
+ 
 networks:
   default:
       name: "${APP_NETWORK}"
