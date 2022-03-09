@@ -67,7 +67,7 @@ We assume that you are already familiar with Docker, and you can modify [docker-
 git clone --depth=1 https://github.com/Websoft9/docker-erpnext
 cd docker-erpnext
 public_ip=`wget -O - https://download.websoft9.com/ansible/get_ip.sh | bash`  
-sudo sed -i s/erp.example.com/$public_ip/g ./.env  
+sudo sed -i s/APP_SITE_URL.*/APP_SITE_URL=$public_ip/g ./.env  
 docker-compose  up -d
 ```
 
@@ -81,13 +81,11 @@ You should modify ports at [docker-compose file](docker-compose-production.yml) 
 
 #### Why does the erptext port use 8000, which violates the encoding specification of the compose file?  
 The use of 9001 or other ports will lead to errors in some containers and make the application unable to access normally  
-
 #### The default startup is erpnext12, What should I do if I want to run another version?  
  If you want to run erpnext13, you only need to change ERPNEXT_VERSION/FRAPPE_VERSIO to V13;Please delete volumes before edit configure  
-
 ### Usage instructions
 
-You can point your browser to: *`http://Instance's Internet IP:8000`*  
+You can point your browser to: *`http://Instance's Internet IP:port`*  
 
 The following is the information that may be needed during use
 

@@ -57,7 +57,7 @@ sudo bash install-erpnext
 
 ```
 curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
-curl -L "https://github.com/docker/compose/releases/download/v2.1.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+curl -L "https://github.com/docker/compose/releases/download/1.29.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 ln -sf /usr/local/bin/docker-compose  /usr/bin
 sudo systemctl start docker
@@ -71,7 +71,7 @@ sudo systemctl start docker
 git clone --depth=1 https://github.com/Websoft9/docker-erpnext
 cd docker-erpnext
 public_ip=`wget -O - https://download.websoft9.com/ansible/get_ip.sh | bash`  
-sudo sed -i s/erp.example.com/$public_ip/g ./.env  
+sudo sed -i s/APP_SITE_URL.*/APP_SITE_URL=$public_ip/g ./.env  
 sudo docker-compose up -d
 ```
 
@@ -85,16 +85,13 @@ sudo docker-compose up -d
 
 修改 [docker-compose](docker-compose.yml) 文件中冲突的端口，然后再启动容器
 
-
 #### 为什么ERPNext端口用8000，这违反了compose文件的编码规范？  
 因为使用9001或其他端口，将会导致部分容器发生错误，导致应用无法正常访问  
-
 #### 默认启动的ERPNext是v12，我想运行其他版本该如何操作  
 如果您想运行ERPNext13,只需将ERPNEXT_VERSION、FRAPPE_VERSION修改成v13；修改前需要删除volumes文件夹  
-
 ### 使用说明
 
-启动应用后，本地浏览器访问 URL: *`http://服务器公网IP:8000`* 进入应用。  
+启动应用后，本地浏览器访问 URL: *`http://服务器公网IP:端口`* 进入应用。  
 
 下面是使用过程中可能需要的信息
 
