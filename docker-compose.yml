@@ -5,7 +5,7 @@ version: "3.8"
 services:
   erpnext-nginx:
     image: frappe/erpnext-nginx:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-nginx
+    container_name: ${APP_NAME}-nginx
     restart: always
     ports:
       - ${APP_PORT}:8080
@@ -21,7 +21,7 @@ services:
 
   erpnext-python:
     image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-worker
+    container_name: ${APP_NAME}-worker
     restart: always
     environment:
       - MARIADB_HOST=${DB_MARIADB_HOST}
@@ -37,7 +37,7 @@ services:
 
   frappe-socketio:
     image: frappe/frappe-socketio:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-socketio
+    container_name: ${APP_NAME}-socketio
     restart: always
     depends_on:
       - redis-socketio
@@ -47,7 +47,7 @@ services:
 
   erpnext-worker-default:
     image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-worker-default
+    container_name: ${APP_NAME}-worker-default
     restart: always
     command: worker
     depends_on:
@@ -59,7 +59,7 @@ services:
 
   erpnext-worker-short:
     image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-worker-short
+    container_name: ${APP_NAME}-worker-short
     restart: always
     command: worker
     environment:
@@ -73,7 +73,7 @@ services:
 
   erpnext-worker-long:
     image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-worker-long
+    container_name: ${APP_NAME}-worker-long
     restart: always
     command: worker
     environment:
@@ -86,7 +86,7 @@ services:
 
   erpnext-schedule:
     image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-schedule
+    container_name: ${APP_NAME}-schedule
     restart: always
     command: schedule
     depends_on:
@@ -98,28 +98,28 @@ services:
 
   redis-cache:
     image: redis:${DB_REDIS_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-redis-cache
+    container_name: ${APP_NAME}-redis-cache
     restart: always
     volumes:
       - redis-cache-vol:/data
 
   redis-queue:
     image: redis:${DB_REDIS_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-redis-queue
+    container_name: ${APP_NAME}-redis-queue
     restart: always
     volumes:
       - redis-queue-vol:/data
 
   redis-socketio:
     image: redis:${DB_REDIS_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-redis-socketio
+    container_name: ${APP_NAME}-redis-socketio
     restart: always
     volumes:
       - redis-socketio-vol:/data
 
   mariadb:
     image: mariadb:${DB_MARIADB_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-mariadb
+    container_name: ${APP_NAME}-db
     restart: always
     ports:
       - ${DB_MARIADB_PORT}:3306
@@ -136,7 +136,7 @@ services:
 
   site-creator:
     image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_CONTAINER_NAME}-site-creator
+    container_name: ${APP_NAME}-site-creator
     restart: "no"
     command: new
     depends_on:
@@ -163,4 +163,4 @@ volumes:
  
 networks:
   default:
-      name: "${APP_NETWORK}"
+      name: "${APP_NAME}"
