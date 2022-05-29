@@ -1,6 +1,5 @@
-## About
+# ERPNext
 
-This repository is forked from ONLYOFFICE/Docker-CommunityServer, we have the following modifications are provided
+* docs: https://github.com/frappe/frappe_docker
+* versions: 11, 12, 13
 
-* replace README.md
-* add README-zh.md, CHANGELOG.md, Note.md, License.md, docker-compose.yml,.env, src, .github folder
