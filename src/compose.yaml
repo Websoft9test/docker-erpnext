@@ -30,7 +30,6 @@ services:
 
   frontend:
     image: frappe/frappe-nginx:${FRAPPE_VERSION}
-    container_name: $APP_NAME
     environment:
       BACKEND: backend:8000
       SOCKETIO: websocket:9000
