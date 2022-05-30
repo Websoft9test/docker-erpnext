@@ -1,5 +1,6 @@
 # ERPNext
 
+<<<<<<< HEAD
 ## About Install
 
 官方非常及时的更新了安装所需的镜像，且提供了灵活多变的 docker compose 文件以供用户使用。  
@@ -28,3 +29,8 @@ password: admin
 #### ERPNext 镜像与 Frappe 镜像有什么区别？
 
 有待研究，实验中发现 ERPNext  不会出现图片乱码问题
+=======
+* docs: https://github.com/frappe/frappe_docker
+* versions: 11, 12, 13
+
+>>>>>>> b56db58d7c833ed9f471f35d255895db33f81d5b
