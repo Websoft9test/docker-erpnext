@@ -1,166 +1,72 @@
-# image: https://hub.docker.com/r/frappe/erpnext-worker
+x-depends-on-configurator: &depends_on_configurator
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
 
-version: "3.8"
+x-backend-defaults: &backend_defaults
+  <<: *depends_on_configurator
+  image: frappe/frappe-worker:${FRAPPE_VERSION:?No Frappe version set}
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
 
 services:
-  erpnext-nginx:
-    image: frappe/erpnext-nginx:${APP_VERSION}
-    container_name: ${APP_NAME}-nginx
-    restart: always
-    ports:
-      - ${APP_PORT}:8080
+  configurator:
+    <<: *backend_defaults
+    command: configure.py
     environment:
-      - FRAPPE_PY=erpnext-python
-      - FRAPPE_PY_PORT=8000
-      - FRAPPE_SOCKETIO=frappe-socketio
-      - SOCKETIO_PORT=9000
-      - SKIP_NGINX_TEMPLATE_GENERATION=${SKIP_NGINX_TEMPLATE_GENERATION}
-    volumes:
-      - sites-vol:/var/www/html/sites:rw
-      - assets-vol:/assets:rw
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      REDIS_CACHE: ${REDIS_CACHE}
+      REDIS_QUEUE: ${REDIS_QUEUE}
+      REDIS_SOCKETIO: ${REDIS_SOCKETIO}
+      SOCKETIO_PORT: 9000
+    depends_on: {}
 
-  erpnext-python:
-    image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_NAME}-worker
-    restart: always
+  backend:
+    <<: *backend_defaults
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - assets:/home/frappe/frappe-bench/sites/assets:ro
+
+  frontend:
+    image: frappe/frappe-nginx:${FRAPPE_VERSION}
     environment:
-      - MARIADB_HOST=${DB_MARIADB_HOST}
-      - REDIS_CACHE=redis-cache:6379
-      - REDIS_QUEUE=redis-queue:6379
-      - REDIS_SOCKETIO=redis-socketio:6379
-      - SOCKETIO_PORT=9000
-      - AUTO_MIGRATE=1
-      - WORKER_CLASS=${WORKER_CLASS}
+      BACKEND: backend:8000
+      SOCKETIO: websocket:9000
+      FRAPPE_SITE_NAME_HEADER: ${FRAPPE_SITE_NAME_HEADER:-$$host}
+      UPSTREAM_REAL_IP_ADDRESS: ${UPSTREAM_REAL_IP_ADDRESS:-127.0.0.1}
+      UPSTREAM_REAL_IP_HEADER: ${UPSTREAM_REAL_IP_HEADER:-X-Forwarded-For}
+      UPSTREAM_REAL_IP_RECURSIVE: ${UPSTREAM_REAL_IP_RECURSIVE:-off}
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-      - assets-vol:/home/frappe/frappe-bench/sites/assets:rw
-
-  frappe-socketio:
-    image: frappe/frappe-socketio:${APP_VERSION}
-    container_name: ${APP_NAME}-socketio
-    restart: always
+      - sites:/usr/share/nginx/html/sites
+      - assets:/usr/share/nginx/html/assets
     depends_on:
-      - redis-socketio
-    volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-      - logs-vol:/home/frappe/frappe-bench/logs:rw
+      - backend
+      - websocket
 
-  erpnext-worker-default:
-    image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_NAME}-worker-default
-    restart: always
-    command: worker
-    depends_on:
-      - redis-queue
-      - redis-cache
+  websocket:
+    <<: *depends_on_configurator
+    image: frappe/frappe-socketio:${FRAPPE_VERSION}
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-      - logs-vol:/home/frappe/frappe-bench/logs:rw
+      - sites:/home/frappe/frappe-bench/sites
 
-  erpnext-worker-short:
-    image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_NAME}-worker-short
-    restart: always
-    command: worker
-    environment:
-      - WORKER_TYPE=short
-    depends_on:
-      - redis-queue
-      - redis-cache
-    volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-      - logs-vol:/home/frappe/frappe-bench/logs:rw
+  queue-short:
+    <<: *backend_defaults
+    command: bench worker --queue short
 
-  erpnext-worker-long:
-    image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_NAME}-worker-long
-    restart: always
-    command: worker
-    environment:
-      - WORKER_TYPE=long
-    depends_on:
-      - redis-queue
-      - redis-cache
-    volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
+  queue-default:
+    <<: *backend_defaults
+    command: bench worker --queue default
 
-  erpnext-schedule:
-    image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_NAME}-schedule
-    restart: always
-    command: schedule
-    depends_on:
-      - redis-queue
-      - redis-cache
-    volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-      - logs-vol:/home/frappe/frappe-bench/logs:rw
+  queue-long:
+    <<: *backend_defaults
+    command: bench worker --queue long
 
-  redis-cache:
-    image: redis:${DB_REDIS_VERSION}
-    container_name: ${APP_NAME}-redis-cache
-    restart: always
-    volumes:
-      - redis-cache-vol:/data
+  scheduler:
+    <<: *backend_defaults
+    command: bench schedule
 
-  redis-queue:
-    image: redis:${DB_REDIS_VERSION}
-    container_name: ${APP_NAME}-redis-queue
-    restart: always
-    volumes:
-      - redis-queue-vol:/data
-
-  redis-socketio:
-    image: redis:${DB_REDIS_VERSION}
-    container_name: ${APP_NAME}-redis-socketio
-    restart: always
-    volumes:
-      - redis-socketio-vol:/data
-
-  mariadb:
-    image: mariadb:${DB_MARIADB_VERSION}
-    container_name: ${APP_NAME}-db
-    restart: always
-    ports:
-      - ${DB_MARIADB_PORT}:3306
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --skip-character-set-client-handshake
-      - --skip-innodb-read-only-compressed # Temporary fix for MariaDB 10.6
-    environment:
-      - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
-      - MYSQL_INITDB_SKIP_TZINFO=1
-    volumes:
-      - mariadb-vol:/var/lib/mysql
-
-  site-creator:
-    image: frappe/erpnext-worker:${APP_VERSION}
-    container_name: ${APP_NAME}-site-creator
-    restart: "no"
-    command: new
-    depends_on:
-      - erpnext-python
-    environment:
-      - SITE_NAME=${APP_SITE_URL}
-      - SITES=${APP_SITE_NAME}
-      - DB_ROOT_USER=${DB_MRAIADB_USER}
-      - MYSQL_ROOT_PASSWORD=${DB_MARIADB_PASSWORD}
-      - ADMIN_PASSWORD=${APP_PASSWORD}
-      - INSTALL_APPS=${APP_INSTALL_APPS}
-    volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-      - logs-vol:/home/frappe/frappe-bench/logs:rw
-
+# ERPNext requires local assets access (Frappe does not)
 volumes:
-  sites-vol:
-  assets-vol:
-  logs-vol:
-  mariadb-vol:
-  redis-cache-vol:
-  redis-queue-vol:
-  redis-socketio-vol:
- 
-networks:
-  default:
-      name: "${APP_NAME}"
+  sites:
+  assets:
