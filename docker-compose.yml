@@ -1,3 +1,9 @@
+# based on compose.yaml
+# --------------modified start -------------------------------------
+# backend: add envs, add container_name
+# frontend: add ports
+# --------------modified  end-------------------------------------
+
 x-depends-on-configurator: &depends_on_configurator
   depends_on:
     configurator:
@@ -24,6 +30,11 @@ services:
 
   backend:
     <<: *backend_defaults
+    container_name: $APP_NAME-backend
+    environment:
+      - APP_URL
+      - APP_PASSWORD
+      - DB_PASSWORD
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - assets:/home/frappe/frappe-bench/sites/assets:ro
@@ -31,6 +42,8 @@ services:
   frontend:
     image: frappe/frappe-nginx:${FRAPPE_VERSION}
     container_name: $APP_NAME
+    ports:
+      - $APP_PORT:8080
     environment:
       BACKEND: backend:8000
       SOCKETIO: websocket:9000
