@@ -24,39 +24,6 @@
     {
       "cmd": "sudo sed -i s/erp.example.com/$public_ip/g ./.env"
     }
-  ],
-  "services":[
-    {
-      "name": "erpnext",
-      "port": "8000",
-      "description_cn": "浏览器访问 ERPNext",
-      "description_en": "Browser access to ERPNext by http",
-      "required": "Y"
-    },
-
-    {
-      "name": "mariadb",
-      "port": "3306",
-      "description_cn": "TCP 访问MariaDB数据库 ",
-      "description_en": "Accessing MySQL database with TCP",
-      "required": "Y"
-    }
-  ],
-  "faqs": [
-    {
-      "question_cn": "为什么ERPNext端口用8000，这违反了compose文件的编码规范？",
-      "answer_cn": "因为使用9001或其他端口，将会导致部分容器发生错误，导致应用无法正常访问",
-      "question_en": "Why does the erptext port use 8000, which violates the encoding specification of the compose file?",
-      "answer_en": "The use of 9001 or other ports will lead to errors in some containers and make the application unable to access normally"
-    },
-
-    {
-      "question_cn": "默认启动的ERPNext是v12，我想运行其他版本该如何操作",
-      "answer_cn": "如果您想运行ERPNext13,只需将ERPNEXT_VERSION、FRAPPE_VERSION修改成v13；修改前需要删除volumes文件夹",
-      "question_en": "The default startup is erpnext12, What should I do if I want to run another version?",
-      "answer_en": " If you want to run erpnext13, you only need to change ERPNEXT_VERSION/FRAPPE_VERSIO to V13;Please delete volumes before edit configure"
-    }
-
   ]
 
 
