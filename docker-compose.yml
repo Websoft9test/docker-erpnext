@@ -55,7 +55,7 @@ services:
           fi
         done;
         echo "common_site_config.json found";
-        bench new-site frontend --admin-password=${APP_PASSWORD} --${APP_DB_PARAM}-root-password=${DB_MARIA_PASSWORD} --install-app erpnext --set-default;
+        bench new-site frontend --admin-password=${APP_PASSWORD} --${APP_DB_PARAM}-root-password=${DB_MARIA_PASSWORD} --install-app erpnext;
 
   db:
     image: mariadb:10.6
