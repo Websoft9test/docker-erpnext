@@ -56,6 +56,7 @@ services:
         done;
         echo "common_site_config.json found";
         bench new-site frontend --admin-password=${APP_PASSWORD} --db-root-password=${DB_MARIA_PASSWORD} --install-app erpnext --set-default;
+
   db:
     image: mariadb:10.6
     healthcheck:
@@ -74,7 +75,9 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_MARIA_PASSWORD}
     volumes:
       - db-data:/var/lib/mysql
-
+    ports:
+      - "${DB_MARIA_PORT}:3306"
+      
   frontend:
     image: frappe/erpnext-nginx:${APP_VERSION}
     deploy:
@@ -91,7 +94,7 @@ services:
       - sites:/usr/share/nginx/html/sites
       - assets:/usr/share/nginx/html/assets
     ports:
-      - "8080:8080"
+      - "${APP_PORT}:8080"
 
   queue-default:
     image: frappe/erpnext-worker:${APP_VERSION}
