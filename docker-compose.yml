@@ -167,3 +167,8 @@ volumes:
   db-data:
   redis-data:
   sites:
+
+networks:
+  default:
+    name: ${APP_NETWORK}
+    external: true
