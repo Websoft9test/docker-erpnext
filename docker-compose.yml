@@ -6,6 +6,7 @@ version: "3.8"
 services:
   backend:
     image: frappe/erpnext-worker:${APP_VERSION}
+    container:${APP_NAME} 
     deploy:
       restart_policy:
         condition: on-failure
