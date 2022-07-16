@@ -16,6 +16,7 @@ services:
 
   configurator:
     image: frappe/erpnext-worker:${APP_VERSION}
+    container:${APP_NAME}-configurator
     command:
       - configure.py
     environment:
@@ -30,6 +31,7 @@ services:
 
   create-site:
     image: frappe/erpnext-worker:${APP_VERSION}
+    container:${APP_NAME}-create-site
     deploy:
       restart_policy:
         condition: on-failure
@@ -60,6 +62,7 @@ services:
 
   db:
     image: mariadb:10.6
+    container:${APP_NAME}-db
     healthcheck:
       test: mysqladmin ping -h localhost --password=${DB_MARIA_PASSWORD}
       interval: 1s
@@ -81,6 +84,7 @@ services:
       
   frontend:
     image: frappe/erpnext-nginx:${APP_VERSION}
+    container:${APP_NAME}-frontend
     deploy:
       restart_policy:
         condition: on-failure
@@ -99,6 +103,7 @@ services:
 
   queue-default:
     image: frappe/erpnext-worker:${APP_VERSION}
+    container:${APP_NAME}-queue-default
     deploy:
       restart_policy:
         condition: on-failure
@@ -112,6 +117,7 @@ services:
 
   queue-long:
     image: frappe/erpnext-worker:${APP_VERSION}
+    container:${APP_NAME}-queue-long
     deploy:
       restart_policy:
         condition: on-failure
@@ -125,6 +131,7 @@ services:
 
   queue-short:
     image: frappe/erpnext-worker:${APP_VERSION}
+    container:${APP_NAME}-queue-short
     deploy:
       restart_policy:
         condition: on-failure
@@ -138,6 +145,7 @@ services:
 
   redis:
     image: redis:6.2-alpine
+    container:${APP_NAME}-redis
     deploy:
       restart_policy:
         condition: on-failure
@@ -146,6 +154,7 @@ services:
 
   scheduler:
     image: frappe/erpnext-worker:${APP_VERSION}
+    container:${APP_NAME}-scheduler
     deploy:
       restart_policy:
         condition: on-failure
@@ -157,6 +166,7 @@ services:
 
   websocket:
     image: frappe/frappe-socketio:${APP_VERSION}
+    container:${APP_NAME}-websocket
     deploy:
       restart_policy:
         condition: on-failure
