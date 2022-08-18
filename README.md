@@ -57,6 +57,8 @@ curl -L "https://github.com/docker/compose/releases/download/v2.1.1/docker-compo
 sudo chmod +x /usr/local/bin/docker-compose
 ln -sf /usr/local/bin/docker-compose  /usr/bin
 sudo systemctl start docker
+sudo usermod -aG docker $USER
+newgrp docker
 ```
 
 #### Install ERPNext
@@ -67,7 +69,8 @@ We assume that you are already familiar with Docker, and you can modify [docker-
 git clone --depth=1 https://github.com/Websoft9/docker-erpnext
 cd docker-erpnext
 public_ip=`wget -O - https://download.websoft9.com/ansible/get_ip.sh | bash`  
-sudo sed -i s/erp.example.com/$public_ip/g ./.env  
+sudo sed -i s/erpnext.example.com/$public_ip/g ./.env
+docker network create -d bridge websoft9
 docker-compose  up -d
 ```
 
