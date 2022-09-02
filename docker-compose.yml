@@ -99,7 +99,7 @@ services:
       - sites:/usr/share/nginx/html/sites
       - assets:/usr/share/nginx/html/assets
     ports:
-      - "${APP_PORT}:8080"
+      - "${APP_HTTP_PORT}:8080"
 
   queue-default:
     image: frappe/erpnext-worker:${APP_VERSION}
