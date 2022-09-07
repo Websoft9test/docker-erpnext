@@ -116,3 +116,8 @@ What you get with a Enterprise Support subscription?
 * Knowledge: Answers and guidance from product experts
 * Support: Everything you need for technical support, e.g Enable HTTPS, Upgrade guide
 * Security: Security services and tools to protect your software
+
+
+### Infrastructure model
+
+![Infrastructure model](.infragenie/infrastructure_model.png)
